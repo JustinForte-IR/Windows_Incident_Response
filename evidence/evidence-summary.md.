@@ -1,0 +1,55 @@
+# Evidence Summary — Windows Server Authentication & Persistence Investigation
+
+**Project:** Windows_Incident_Response  
+**Environment:** Authorized TryHackMe Windows Server 2019 training lab (`THM-WINFUN2`)  
+**Case status:** Inconclusive — compromise not established  
+**Evidence type:** Analyst notes derived from interactive lab exercises; **not a raw forensic export**
+
+## 1. Scope and provenance
+
+The Phase 4 capstone examined available Windows event records following a lab restart, focusing on successful RDP authentication, process creation, and service installation. The lab used circular event logs, and instances were restarted or expired during training. Evidence observed in separate sessions **must not be treated as one continuous event timeline**.
+
+This file summarizes previously documented findings. Original EVTX exports, cryptographic hashes of evidence archives, and verified screenshots are **not included** and are not claimed to exist.
+
+## 2. Capstone observations 
+
+| ID | Source | Observation | What this supports | Limitation |
+|---|---|---|---|---|
+| E-01 | Security event data, Event 4624 | Three Administrator RDP logon observations associated with source `10.129.93.13` | Successful remote interactive authentication was recorded | Authorization and intent not independently established; raw event records not attached |
+| E-02 | Security event search, Event 4688 | No matching process-creation records identified in the examined **10-minute follow-up window** | The query did not surface correlated 4688 events in that window | Does not prove that no process executed; collection completeness, filters and retention constrain interpretation |
+| E-03 | System event search, Event 7045 | No matching service-installation events identified in the examined **one-hour window** | No 7045 evidence was found for that bounded interval | Does not rule out service installation outside the window, missing logs, or other persistence |
+| E-04 | Audit policy inspection | Process Creation auditing was found enabled **at the time checked** | The relevant audit policy was enabled at inspection time | Does not establish historical coverage for earlier event times |
+| E-05 | Host/log baseline | The lab had restarted; Security log used circular retention | Explains why earlier observations may no longer be accessible | Exact event coverage and record completeness require preserved exports |
+
+**Timestamp precision:** Exact timestamps for individual capstone logon records are not reproduced here because the primary event exports have not been verified for this repository. The date is contextual, **not** a reconstructed second-by-second incident timeline.
+
+## 3. Earlier training observations — separate sessions
+
+During earlier October training sessions, RDP authentication and session activity were examined using Security 4624 and Terminal Services events including 1149, 21, 24 and 25. Some ordinary environment-management process creation was also observed. These sessions are **not part of the November capstone evidence set**, and are not used here to claim a single attack chain.
+
+## 4. Findings: facts versus unresolved questions
+
+**Observed:** Administrator RDP logons occurred in available capstone telemetry. Searches for correlated process creation and service installation did not return matching records within the specified windows.
+
+**Not established:** Credential misuse, unauthorized access, malicious PowerShell execution, service persistence, attacker identity, lateral movement, or compromise.
+
+**Evidence gaps:** Explicit owner authorization records; longer and validated Security/System/RDP retention; reliable process command-line telemetry and/or EDR; network session context; verified original event exports.
+
+## 5. Analyst assessment
+
+**Disposition:** Inconclusive. The available observations justify reviewing access authorization and obtaining more complete telemetry, but are insufficient to classify the activity as malicious or confirmed compromise. Conversely, missing matching events within limited windows do not prove the activity was benign.
+
+## 6. Suggested next collection in an authorized lab
+
+1. Record hostname, OS build, boot time, current clock/time zone and log configuration.
+2. Export relevant Security, System, PowerShell Operational and Terminal Services records with clear collection times, where permitted.
+3. Extract structured fields (Logon Type, Logon ID, account, source address, process identifiers) to correlate event sequences cautiously.
+4. Capture policy/logging configuration and document the earliest available record for each source.
+5. Preserve hashes of actual exported evidence and write an evidence-handling log **only after those artifacts exist**.
+6. Correlate against approved administrative activity and EDR/network data where available.
+
+## 7. Ethics and publication
+
+This is a **training case-study**, not professional incident-response employment or proof of a breach. Do not publish live credentials, personal information, internal assets, raw sensitive logs, or unsanitized evidence. Avoid fabricated event records, hashes, screenshots, or command outputs.
+
+**Related files:** [`../README.md`](../README.md), [`../investigation/authentication-analysis.md`](../investigation/authentication-analysis.md), [`../investigation/process-investigation.md`](../investigation/process-investigation.md), [`../investigation/service-persistence.md`](../investigation/service-persistence.md).
